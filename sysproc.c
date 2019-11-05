@@ -21,6 +21,22 @@ sys_exit(void)
 }
 
 int
+sys_hello(void)
+{
+    int n;
+    if(argint(0, &n) < 0)
+        return -1;
+    cprintf("Hello world\n");
+    return 0;
+}
+
+int
+sys_cps(void)
+{
+    return cps();
+}
+
+int
 sys_wait(void)
 {
   return wait();
