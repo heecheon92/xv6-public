@@ -47,7 +47,7 @@ cps()
     acquire(&ptable.lock);
 
     // Print each process status
-    cprintf("name \t pid \t state \t priority\n");
+    cprintf("name \t pid \t state \t\t priority\n");
 
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
         if (p->state == SLEEPING)
