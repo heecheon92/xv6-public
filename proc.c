@@ -7,6 +7,8 @@
 #include "proc.h"
 #include "spinlock.h"
 
+#define NULL 0
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
@@ -343,6 +345,7 @@ wait(void)
   }
 }
 
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -355,18 +358,43 @@ void
 scheduler(void)
 {
   struct proc *p;
+  struct proc *p1;
   struct cpu *c = mycpu();
-  c->proc = 0;
+  
+  // Line commented out from original code.
+  // c->proc = 0;
   
   for(;;){
     // Enable interrupts on this processor.
     sti();
+
+    struct proc *highP = NULL;
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
+
+      highP = p;
+
+      // Choose the process with the highest priority
+      for ( p1 = ptable.proc; p1 < &ptable.proc[NPROC]; p1++)
+      {
+        if ( p1->state != RUNNABLE)
+        {
+          continue;
+        }
+        if ( highP->priority > p1->priority )
+        {
+          highP = p1;
+        };
+      }
+      
+      // Set The Highest priority process to p.
+      p = highP;
+      //c->proc = p;
+      //switchuvm(p);
 
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -411,6 +439,30 @@ sched(void)
   intena = mycpu()->intena;
   swtch(&p->context, mycpu()->scheduler);
   mycpu()->intena = intena;
+}
+
+// Change priority.
+int
+chpr ( int pid, int priority )
+{
+  struct proc *p;
+
+  // Aquire the lock.
+  acquire( &ptable.lock );
+  for ( p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    if ( p->pid == pid )
+    {
+      // Update the priority.
+      p->priority = priority;
+      break;
+    }
+
+  }
+  // Release the lock.
+  release( &ptable.lock);
+  
+  return pid;
 }
 
 // Give up the CPU for one scheduling round.
