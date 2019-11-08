@@ -385,7 +385,7 @@ scheduler(void)
         {
           continue;
         }
-        if ( highP->priority > p1->priority )
+        if ( highP->priority < p1->priority )
         {
           highP = p1;
         };
@@ -401,7 +401,7 @@ scheduler(void)
       // before jumping back to us.
       c->proc = p;
       switchuvm(p);
-      p->state = RUNNING;
+      highP->state = RUNNING;
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
