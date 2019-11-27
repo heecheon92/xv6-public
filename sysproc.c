@@ -65,10 +65,19 @@ sys_sbrk(void)
   int n;
 
   if(argint(0, &n) < 0)
-    return -1;
+  {
+      return -1;
+  }
   addr = myproc()->sz;
-  if(growproc(n) < 0)
-    return -1;
+  if ( n < 0 )
+  {
+      uint sz;
+      if ((sz = deallocuvm(myproc()->pgdir, addr, addr + n)) == 0) return -1;
+      myproc()->sz += n;
+      switchuvm(myproc());
+  }
+  else if (myproc()->sz +n >= KERNBASE) return -1;
+  else myproc()->sz += n;
   return addr;
 }
 

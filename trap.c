@@ -77,6 +77,30 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
+  case T_PGFLT:
+    ;               // <--- this is a bug.
+    if (tf->err & 1) // <--- if page table is already present, then kill the proc. Don't map.
+    {
+        // If-statement's condition checks if tf->err (PTE_P) is present (1).
+        cprintf("\n\ttf->err:%d ... Page Table Entry already present, killing the process", tf->err);
+        myproc()->killed = 1;
+        cprintf("... success.");
+        break;
+    }
+    else            // <--- We can map because the page table entry is not present.
+    {
+        char *mem = kalloc();
+        uint a = PGROUNDDOWN(rcr2());
+        if (mem == 0)
+        {
+            cprintf("Lazy allocation, out of memory\n");
+            myproc()->killed = 1;
+            break;
+        }
+        //memset(mem, 0, PGSIZE);
+        mappages(myproc()->pgdir, (char*) a, PGSIZE, V2P(mem), PTE_W | PTE_U);   // PTE_P : Present Bit
+        break;                                                                   // PTE_W : Write Bit
+    }                                                                            // PTE_U : User Bit
 
   //PAGEBREAK: 13
   default:
