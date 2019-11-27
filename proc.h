@@ -50,7 +50,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   // Make priority for scheduler here!
-  int priority;                // Process Priority (0-50)
+  int priority;                // Process Priority (0-20)
                                // Higher value, higher priority
 };
 

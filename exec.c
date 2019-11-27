@@ -19,6 +19,9 @@ exec(char *path, char **argv)
   pde_t *pgdir, *oldpgdir;
   struct proc *curproc = myproc();
 
+  // Code added here to input priority
+ // proc->tf->esp = sp;
+
   begin_op();
 
   if((ip = namei(path)) == 0){
@@ -99,6 +102,7 @@ exec(char *path, char **argv)
   curproc->sz = sz;
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
+  //curproc->priority = 2;
   switchuvm(curproc);
   freevm(oldpgdir);
   return 0;
